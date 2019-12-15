@@ -1,9 +1,11 @@
 #include "BSP.h"
 #include <stdlib.h>
+#include <stdio.h>
 
 Tree* generateDungeon(uint16_t _width, uint16_t _height) {
     IntRectangle mainContainer = {0, 0, _width, _height};
     Tree* root = splitTree(0, mainContainer);
+    generateRoom(root);
 
     return root;
 }
@@ -77,14 +79,22 @@ bool isLeaf(Tree* _node) {
 void debugBSPDraw(SDL_Renderer* _renderer, Tree* _node) {
     if(isLeaf(_node)){
 
-        SDL_Rect rect;
-        rect.x = _node->container.x;
-        rect.y = _node->container.y;
-        rect.w = _node->container.w;
-        rect.h = _node->container.h;
+        SDL_Rect boundRect;
+        boundRect.x = _node->container.x;
+        boundRect.y = _node->container.y;
+        boundRect.w = _node->container.w;
+        boundRect.h = _node->container.h;
+
+        SDL_Rect roomRect;
+        roomRect.x = _node->room.x;
+        roomRect.y = _node->room.y;
+        roomRect.w = _node->room.w;
+        roomRect.h = _node->room.h;
 
         SDL_SetRenderDrawColor(_renderer, 0, 255, 0, 255);
-        SDL_RenderDrawRect(_renderer, &rect);
+        SDL_RenderDrawRect(_renderer, &boundRect);
+        SDL_SetRenderDrawColor(_renderer, 255, 0, 0, 255);
+        SDL_RenderDrawRect(_renderer, &roomRect);
         SDL_SetRenderDrawColor(_renderer, 0, 0, 0, 255);
         return;
     }
@@ -95,5 +105,30 @@ void debugBSPDraw(SDL_Renderer* _renderer, Tree* _node) {
 
     if(_node->leftChild){
         debugBSPDraw(_renderer, _node->leftChild);
+    }
+}
+
+void generateRoom(Tree* _node) {
+    if(!isLeaf(_node)){
+        if(_node->leftChild){
+            generateRoom(_node->leftChild);
+        }
+
+        if(_node->rightChild){
+            generateRoom(_node->rightChild);
+        }
+    }
+    else{
+        int32_t x = randomBetween(MIN_ROOM_DISTANCE, _node->container.w / 4);
+        int32_t y = randomBetween(MIN_ROOM_DISTANCE, _node->container.h / 4);
+
+        IntRectangle room = {
+                _node->container.x + x,
+                _node->container.y + y,
+                _node->container.w - (int16_t)((float)x * (randomBetween(20, 30) / 10.f)),
+                _node->container.h - (int16_t)((float)y * (randomBetween(20, 30) / 10.f)),
+        };
+
+        _node->room = room;
     }
 }

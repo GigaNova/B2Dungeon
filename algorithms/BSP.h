@@ -4,8 +4,8 @@
 #include <stdint.h>
 #include "../Math.h"
 
-#define MIN_ROOMS 2
-#define MAX_DEPTH 4
+#define MIN_ROOM_DISTANCE 2
+#define MAX_DEPTH 5
 
 typedef struct{
     int16_t x;
@@ -28,12 +28,13 @@ struct Tree{
 typedef struct Tree Tree;
 
 Tree* generateDungeon(uint16_t _width, uint16_t _height);
+
 Tree* splitTree(uint8_t _depth, IntRectangle _container);
-void destroyTree(Tree* _node);
 SplitRectangle splitContainer(IntRectangle _container);
+void generateRoom(Tree* _node);
 
 bool isLeaf(Tree* _node);
 
 void debugBSPDraw(SDL_Renderer* _renderer, Tree* _node);
-
+void destroyTree(Tree* _node);
 #endif //POKEMONMYSTERYCREATOR_BSP_H
