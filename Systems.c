@@ -8,8 +8,6 @@
 
 #define PLAYER_SPEED 250.f
 
-#define DEBUG_MODE
-
 void velocitySystem(Position *_position, const Velocity *_velocity) {
     if(_velocity == NULL) return;
 

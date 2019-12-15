@@ -9,6 +9,7 @@
 #include "DeltaTime.h"
 #include "Input.h"
 #include "Map.h"
+#include "algorithms/BSP.h"
 #include <stdlib.h>
 #include <SDL_image.h>
 #include <time.h>
@@ -88,6 +89,8 @@ int main( int argc, char* args[] ) {
             Map* map = createMap(renderer, 42, 32);
             game->map = map;
 
+            Tree* root = generateDungeon(SCREEN_WIDTH, SCREEN_HEIGHT);
+
             //Show loaded sprites
             showSpritesLoaded();
 
@@ -127,7 +130,8 @@ int main( int argc, char* args[] ) {
                 SDL_RenderClear(renderer);
 
                 updateEntities(game);
-                drawMap(renderer, game);
+                //drawMap(renderer, game);
+                debugBSPDraw(renderer, root);
                 drawEntities(renderer, game);
 
                 SDL_RenderPresent(renderer);
