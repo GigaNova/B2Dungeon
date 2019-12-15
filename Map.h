@@ -17,6 +17,7 @@ struct Tile{
     Sprite sprite;
 
     bool drawn;
+    bool walkable;
 };
 typedef struct Tile Tile;
 
@@ -38,5 +39,7 @@ void renderTile(SDL_Renderer* _renderer, Tile* _tile);
 
 void resetMap(Map* _map);
 void resetTile(Tile* _tile);
+
+bool isGround(Tile* _tile);
 
 #endif //POKEMONMYSTERYCREATOR_MAP_H

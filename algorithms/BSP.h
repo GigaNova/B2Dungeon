@@ -8,7 +8,7 @@
 #define MIN_ROOM_DISTANCE 2
 #define MAX_DEPTH 5
 #define MAX_MAP_SIZE 512
-#define SCALE 32
+#define SCALE 28
 
 #define WIDTH_RATIO 0.45
 #define HEIGHT_RATIO 0.45
@@ -56,6 +56,8 @@ void generateCorridors(Tree* _node);
 
 bool isLeaf(Tree* _node);
 Point getCenter(IntRectangle* _rect);
+
+void refineMap(TileMap* _tileMap, uint16_t _width, uint16_t _height);
 
 void debugBSPDraw(SDL_Renderer* _renderer, Tree* _node);
 void destroyTree(Tree* _node);

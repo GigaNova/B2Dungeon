@@ -72,6 +72,7 @@ Tile* createTile(SDL_Renderer* _renderer, uint16_t _x, uint16_t _y, uint16_t _of
     tile->pos = position;
     tile->sprite = sprite;
     tile->drawn = false;
+    tile->walkable = false;
 
     return tile;
 }

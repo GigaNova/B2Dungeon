@@ -21,6 +21,7 @@ Map* convertToMap(SDL_Renderer* _renderer, Tree* _root, uint16_t _width, uint16_
     }
 
     convertNode(_renderer, _root, &tileMap);
+    refineMap(&tileMap, _width / SCALE, _height / SCALE);
     linkNodes(&tileMap, _width / SCALE, _height / SCALE);
 
     map->root = tileMap.map[0][0];
@@ -67,6 +68,7 @@ void convertNode(SDL_Renderer* _renderer, Tree* _node, TileMap* _tileMap) {
             for(uint16_t y = _node->room.y / SCALE; y < (uint16_t)(_node->room.y / SCALE) + (uint16_t)(_node->room.h / SCALE); ++y){
                 if(x == 0 || y == 0) continue;
                 Tile* newTile = createTile(_renderer, x, y, 10, 1);
+                newTile->walkable = true;
                 _tileMap->map[x][y] = newTile;
             }
         }
@@ -215,4 +217,121 @@ Point getCenter(IntRectangle* _rect) {
     result.y = _rect->y + (_rect->h / 2);
 
     return result;
+}
+
+void refineMap(TileMap* _tileMap, uint16_t _width, uint16_t _height) {
+    bool flagTop = false;
+    bool flagRight = false;
+    bool flagDown = false;
+    bool flagLeft = false;
+    bool flagTopLeft = false;
+    bool flagTopRight = false;
+    bool flagDownRight = false;
+    bool flagDownLeft = false;
+
+    for(uint16_t x = 0; x < _width; ++x) {
+        for(uint16_t y = 0; y < _height; ++y) {
+            if(x - 1 > 0){
+                flagLeft = _tileMap->map[x - 1][y]->walkable;
+            }
+            if(x + 1 < _width){
+                flagRight = _tileMap->map[x + 1][y]->walkable;
+            }
+            if(y - 1 > 0){
+                flagTop = _tileMap->map[x][y - 1]->walkable;
+            }
+            if(y + 1 < _height){
+                flagDown = _tileMap->map[x][y + 1]->walkable;
+            }
+            if(x + 1 < _width && y + 1 < _height){
+                flagDownRight = _tileMap->map[x + 1][y + 1]->walkable;
+            }
+            if(x + 1 < _height && y - 1 > 0){
+                flagTopRight = _tileMap->map[x + 1][y - 1]->walkable;
+            }
+            if(x - 1 > 0 && y + 1 < _height){
+                flagDownLeft = _tileMap->map[x - 1][y + 1]->walkable;
+            }
+            if(x - 1 > 0 && y - 1 > 0){
+                flagTopLeft = _tileMap->map[x - 1][y - 1]->walkable;
+            }
+
+            if(!flagTop && flagRight && !flagDown && !flagLeft) {
+                uint32_t random = randomBetween(0, 100);
+                if (random < 33){
+                    _tileMap->map[x][y]->sprite.clip_x = 3 + (2 * TILE_WIDTH);
+                    _tileMap->map[x][y]->sprite.clip_y = 2 + (1 * TILE_HEIGHT);
+                }
+                else if (random < 66){
+                    _tileMap->map[x][y]->sprite.clip_x = 6 + (5 * TILE_WIDTH);
+                    _tileMap->map[x][y]->sprite.clip_y = 2 + (1 * TILE_HEIGHT);
+                }
+                else{
+                    _tileMap->map[x][y]->sprite.clip_x = 9 + (8 * TILE_WIDTH);
+                    _tileMap->map[x][y]->sprite.clip_y = 2 + (1 * TILE_HEIGHT);
+                }
+            }
+            else if(!flagTop && !flagRight && !flagDown && flagLeft) {
+                uint32_t random = randomBetween(0, 100);
+                if (random < 33){
+                    _tileMap->map[x][y]->sprite.clip_x = 1;
+                    _tileMap->map[x][y]->sprite.clip_y = 2 + (1 * TILE_HEIGHT);
+                }
+                else if (random < 66){
+                    _tileMap->map[x][y]->sprite.clip_x = 4 + (3 * TILE_WIDTH);
+                    _tileMap->map[x][y]->sprite.clip_y = 2 + (1 * TILE_HEIGHT);
+                }
+                else{
+                    _tileMap->map[x][y]->sprite.clip_x = 7 + (6 * TILE_WIDTH);
+                    _tileMap->map[x][y]->sprite.clip_y = 2 + (1 * TILE_HEIGHT);
+                }
+            }
+            else if(!flagTop && !flagRight && flagDown && !flagLeft) {
+                uint32_t random = randomBetween(0, 100);
+                if (random < 33){
+                    _tileMap->map[x][y]->sprite.clip_x = 2 + (1 * TILE_WIDTH);
+                    _tileMap->map[x][y]->sprite.clip_y = 3 + (2 * TILE_HEIGHT);
+                }
+                else if (random < 66){
+                    _tileMap->map[x][y]->sprite.clip_x = 5 + (4 * TILE_WIDTH);
+                    _tileMap->map[x][y]->sprite.clip_y = 3 + (2 * TILE_HEIGHT);
+                }
+                else{
+                    _tileMap->map[x][y]->sprite.clip_x = 8 + (7 * TILE_WIDTH);
+                    _tileMap->map[x][y]->sprite.clip_y = 3 + (2 * TILE_HEIGHT);
+                }
+            }
+            else if(flagTop && !flagRight && !flagDown && !flagLeft) {
+                uint32_t random = randomBetween(0, 100);
+                if (random < 33){
+                    _tileMap->map[x][y]->sprite.clip_x = 2 + (1 * TILE_WIDTH);
+                    _tileMap->map[x][y]->sprite.clip_y = 1;
+                }
+                else if (random < 66){
+                    _tileMap->map[x][y]->sprite.clip_x = 5 + (4 * TILE_WIDTH);
+                    _tileMap->map[x][y]->sprite.clip_y = 1;
+                }
+                else{
+                    _tileMap->map[x][y]->sprite.clip_x = 8 + (7 * TILE_WIDTH);
+                    _tileMap->map[x][y]->sprite.clip_y = 1;
+                }
+            }
+            else if(!flagTop && !flagRight && !flagDown && !flagLeft && flagDownRight) {
+                _tileMap->map[x][y]->sprite.clip_x = 1;
+                _tileMap->map[x][y]->sprite.clip_y = 16 + (15 * TILE_HEIGHT);
+            }
+            else if(!flagTop && !flagRight && !flagDown && !flagLeft && flagTopRight) {
+                _tileMap->map[x][y]->sprite.clip_x = 1;
+                _tileMap->map[x][y]->sprite.clip_y = 17 + (16 * TILE_HEIGHT);
+            }
+            else if(!flagTop && !flagRight && !flagDown && !flagLeft && flagDownLeft) {
+                _tileMap->map[x][y]->sprite.clip_x = 2 + (1 * TILE_WIDTH);
+                _tileMap->map[x][y]->sprite.clip_y = 16 + (15 * TILE_HEIGHT);
+            }
+            else if(!flagTop && !flagRight && !flagDown && !flagLeft && flagTopLeft) {
+                _tileMap->map[x][y]->sprite.clip_x = 2 + (1 * TILE_WIDTH);
+                _tileMap->map[x][y]->sprite.clip_y = 17 + (16 * TILE_HEIGHT);
+            }
+        }
+    }
 }
