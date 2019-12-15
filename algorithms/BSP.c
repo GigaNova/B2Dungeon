@@ -2,12 +2,75 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-Tree* generateDungeon(uint16_t _width, uint16_t _height) {
+Map* generateDungeon(SDL_Renderer* _renderer, uint16_t _width, uint16_t _height) {
     IntRectangle mainContainer = {0, 0, _width, _height};
     Tree* root = splitTree(0, mainContainer);
     generateRoom(root);
 
-    return root;
+    return convertToMap(_renderer, root, _width, _height);
+}
+
+Map* convertToMap(SDL_Renderer* _renderer, Tree* _root, uint16_t _width, uint16_t _height) {
+    Map* map = (Map*)malloc(sizeof(Map));
+
+    TileMap tileMap;
+    for(uint16_t x = 0; x < MAX_MAP_SIZE; ++x){
+        for(uint16_t y = 0; y < MAX_MAP_SIZE; ++y){
+            tileMap.map[x][y] = createTile(_renderer, x, y, 1, 1);
+        }
+    }
+
+    convertNode(_renderer, _root, &tileMap);
+    linkNodes(&tileMap, _width / SCALE, _height / SCALE);
+
+    map->root = tileMap.map[0][0];
+    map->width = _width / SCALE;
+    map->height = _height / SCALE;
+
+    destroyTree(_root);
+
+    return map;
+}
+
+void linkNodes(TileMap* _tileMap, uint16_t _width, uint16_t _height) {
+    for(uint16_t x = 0; x < _width; ++x) {
+        for (uint16_t y = 0; y < _height; ++y) {
+            Tile* tile = _tileMap->map[x][y];
+            if(x - 1 >= 0){
+                tile->left = _tileMap->map[x - 1][y];
+            }
+            if(x + 1 < _width){
+                tile->right = _tileMap->map[x + 1][y];
+            }
+            if(y - 1 >= 0){
+                tile->up = _tileMap->map[x][y - 1];
+            }
+            if(y + 1 < _height){
+                tile->down = _tileMap->map[x][y + 1];
+            }
+        }
+    }
+}
+
+void convertNode(SDL_Renderer* _renderer, Tree* _node, TileMap* _tileMap) {
+    if(!isLeaf(_node)){
+        if(_node->rightChild){
+            convertNode(_renderer, _node->rightChild, _tileMap);
+        }
+
+        if(_node->leftChild){
+            convertNode(_renderer, _node->leftChild, _tileMap);
+        }
+    }
+    else{
+        for(uint16_t x = _node->room.x / SCALE; x < (uint16_t)(_node->room.x / SCALE) + (uint16_t)(_node->room.w / SCALE); ++x){
+            for(uint16_t y = _node->room.y / SCALE; y < (uint16_t)(_node->room.y / SCALE) + (uint16_t)(_node->room.h / SCALE); ++y){
+                if(x == 0 || y == 0) continue;
+                Tile* newTile = createTile(_renderer, x, y, 10, 1);
+                _tileMap->map[x][y] = newTile;
+            }
+        }
+    }
 }
 
 Tree* splitTree(uint8_t _depth, IntRectangle _container) {
@@ -131,4 +194,13 @@ void generateRoom(Tree* _node) {
 
         _node->room = room;
     }
+}
+
+Point getCenter(IntRectangle* _rect) {
+    Point result;
+
+    result.x = _rect->x + (_rect->w / 2);
+    result.y = _rect->y + (_rect->h / 2);
+
+    return result;
 }

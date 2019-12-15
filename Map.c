@@ -28,22 +28,6 @@ Map* createMap(SDL_Renderer* _renderer, uint16_t _width, uint16_t _height) {
         linker[x][0] = currentX;
     }
 
-    //Link tiles
-    for(uint16_t x = 0; x < _width; ++x) {
-        for (uint16_t y = 0; y < _height; ++y) {
-            Tile* tile = linker[x][y];
-            if(x - 1 >= 0){
-                tile->left = linker[x - 1][y];
-            }
-            if(x + 1 < _width){
-                tile->right = linker[x + 1][y];
-            }
-            if(y - 1 >= 0){
-                tile->up = linker[x][y - 1];
-            }
-        }
-    }
-
     return map;
 }
 
@@ -110,5 +94,56 @@ void resetTile(Tile* _tile) {
     }
     if(_tile->left && _tile->left->drawn){
         resetTile(_tile->left);
+    }
+}
+
+void renderMap(SDL_Renderer* _renderer, Map* _map) {
+    SDL_Texture* texTarget = SDL_CreateTexture(_renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, _map->width * TILE_WIDTH, _map->height * TILE_HEIGHT);
+
+    SDL_SetRenderTarget(_renderer, texTarget);
+    SDL_RenderClear(_renderer);
+
+    renderTile(_renderer, _map->root);
+
+    SDL_SetRenderTarget(_renderer, NULL);
+
+    Sprite* sprite = (Sprite*)malloc(sizeof(Sprite));
+    sprite->texture = texTarget;
+    SDL_QueryTexture(texTarget, NULL, NULL, &sprite->width, &sprite->height);
+    sprite->clip_x = 0;
+    sprite->clip_y = 0;
+    sprite->clip_w = sprite->width;
+    sprite->clip_h = sprite->height;
+
+    _map->mapSprite = sprite;
+}
+
+void renderTile(SDL_Renderer* _renderer, Tile* _tile) {
+    SDL_Rect dstRect;
+    dstRect.x = (int)_tile->pos.x;
+    dstRect.y = (int)_tile->pos.y;
+    dstRect.w = _tile->sprite.width;
+    dstRect.h = _tile->sprite.height;
+
+    SDL_Rect srcRect;
+    srcRect.x = _tile->sprite.clip_x;
+    srcRect.y = _tile->sprite.clip_y;
+    srcRect.w = _tile->sprite.clip_w;
+    srcRect.h = _tile->sprite.clip_h;
+
+    SDL_RenderCopyEx(_renderer, _tile->sprite.texture, &srcRect, &dstRect, 0, NULL, SDL_FLIP_NONE);
+
+    _tile->drawn = true;
+    if(_tile->up && !_tile->up->drawn){
+        renderTile(_renderer, _tile->up);
+    }
+    if(_tile->right && !_tile->right->drawn){
+        renderTile(_renderer, _tile->right);
+    }
+    if(_tile->down && !_tile->down->drawn){
+        renderTile(_renderer, _tile->down);
+    }
+    if(_tile->left && !_tile->left->drawn){
+        renderTile(_renderer, _tile->left);
     }
 }

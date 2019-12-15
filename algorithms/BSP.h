@@ -3,9 +3,12 @@
 
 #include <stdint.h>
 #include "../Math.h"
+#include "../Map.h"
 
 #define MIN_ROOM_DISTANCE 2
-#define MAX_DEPTH 5
+#define MAX_DEPTH 4
+#define MAX_MAP_SIZE 512
+#define SCALE 32
 
 typedef struct{
     int16_t x;
@@ -13,6 +16,11 @@ typedef struct{
     uint16_t w;
     uint16_t h;
 } IntRectangle;
+
+typedef struct {
+    int16_t x;
+    int16_t y;
+} Point;
 
 typedef struct {
     IntRectangle left;
@@ -27,13 +35,24 @@ struct Tree{
 };
 typedef struct Tree Tree;
 
-Tree* generateDungeon(uint16_t _width, uint16_t _height);
+typedef struct {
+    Tile* map[MAX_MAP_SIZE][MAX_MAP_SIZE];
+} TileMap;
+
+Map* generateDungeon(SDL_Renderer* _renderer, uint16_t _width, uint16_t _height);
+
+Map* convertToMap(SDL_Renderer* _renderer, Tree* _root, uint16_t _width, uint16_t _height);
+void convertNode(SDL_Renderer* _renderer, Tree* _node, TileMap* _tileMap);
+void linkNodes(TileMap* _tileMap, uint16_t _width, uint16_t _height);
 
 Tree* splitTree(uint8_t _depth, IntRectangle _container);
 SplitRectangle splitContainer(IntRectangle _container);
+
 void generateRoom(Tree* _node);
+void generateCorridors(Tree* _node);
 
 bool isLeaf(Tree* _node);
+Point getCenter(IntRectangle* _rect);
 
 void debugBSPDraw(SDL_Renderer* _renderer, Tree* _node);
 void destroyTree(Tree* _node);

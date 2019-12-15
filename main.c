@@ -86,10 +86,9 @@ int main( int argc, char* args[] ) {
                     id
             );
 
-            Map* map = createMap(renderer, 42, 32);
+            Map* map = generateDungeon(renderer, SCREEN_WIDTH * 4, SCREEN_HEIGHT * 4);
             game->map = map;
-
-            Tree* root = generateDungeon(SCREEN_WIDTH, SCREEN_HEIGHT);
+            renderMap(renderer, map);
 
             //Show loaded sprites
             showSpritesLoaded();
@@ -130,8 +129,7 @@ int main( int argc, char* args[] ) {
                 SDL_RenderClear(renderer);
 
                 updateEntities(game);
-                //drawMap(renderer, game);
-                debugBSPDraw(renderer, root);
+                drawMap(renderer, game);
                 drawEntities(renderer, game);
 
                 SDL_RenderPresent(renderer);

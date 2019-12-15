@@ -16,28 +16,11 @@ void updateEntities(Context *_game) {
 
 void drawMap(SDL_Renderer* _renderer, Context* _game) {
     Map* map = _game->map;
+    Position pos = {0,0};
 
-    drawTile(_renderer, map->root);
+    drawSystem(_renderer, &pos, NULL, map->mapSprite, false);
 
     resetMap(map);
-}
-
-void drawTile(SDL_Renderer* _renderer, Tile* _tile) {
-    drawSystem(_renderer, &_tile->pos, NULL, &_tile->sprite, false);
-    _tile->drawn = true;
-
-    if(_tile->up && !_tile->up->drawn){
-        drawTile(_renderer, _tile->up);
-    }
-    if(_tile->right && !_tile->right->drawn){
-        drawTile(_renderer, _tile->right);
-    }
-    if(_tile->down && !_tile->down->drawn){
-        drawTile(_renderer, _tile->down);
-    }
-    if(_tile->left && !_tile->left->drawn){
-        drawTile(_renderer, _tile->left);
-    }
 }
 
 void drawEntities(SDL_Renderer* _renderer, Context *_game) {
