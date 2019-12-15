@@ -6,9 +6,12 @@
 #include "../Map.h"
 
 #define MIN_ROOM_DISTANCE 2
-#define MAX_DEPTH 4
+#define MAX_DEPTH 5
 #define MAX_MAP_SIZE 512
 #define SCALE 32
+
+#define WIDTH_RATIO 0.45
+#define HEIGHT_RATIO 0.45
 
 typedef struct{
     int16_t x;

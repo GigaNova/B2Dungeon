@@ -117,6 +117,12 @@ SplitRectangle splitContainer(IntRectangle _container) {
         right.y = _container.y + left.h;
         right.w = _container.w;
         right.h = _container.h - left.h;
+
+        float lhsHeightRatio = (float)left.h / (float)left.w;
+        float rhsHeightRatio = (float)right.h / (float)right.w;
+        if(lhsHeightRatio < HEIGHT_RATIO || rhsHeightRatio < HEIGHT_RATIO){
+            return splitContainer(_container);
+        }
     }
     else{
         left.x = _container.x;
@@ -128,6 +134,12 @@ SplitRectangle splitContainer(IntRectangle _container) {
         right.y = _container.y;
         right.w = _container.w - left.w;
         right.h = _container.h;
+
+        float lhsWidthRatio = (float)left.w / (float)left.h;
+        float rhsWidthRatio = (float)right.w / (float)right.h;
+        if(lhsWidthRatio < WIDTH_RATIO || rhsWidthRatio < WIDTH_RATIO){
+            return splitContainer(_container);
+        }
     }
 
     split.left = left;
