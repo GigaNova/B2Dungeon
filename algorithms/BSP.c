@@ -294,7 +294,7 @@ void refineMap(TileMap* _tileMap, uint16_t _width, uint16_t _height) {
                 }
             }
             //Walkable neighbour to the right.
-            else if(!flagTop && flagRight && !flagDown && !flagLeft) {
+            else if(!flagTop && flagRight && !flagDown && !flagLeft && !_tileMap->map[x][y]->walkable) {
                 uint32_t random = randomBetween(0, 100);
                 if (random < 33){
                     _tileMap->map[x][y]->sprite.clip_x = 3 + (2 * TILE_WIDTH);
@@ -310,7 +310,7 @@ void refineMap(TileMap* _tileMap, uint16_t _width, uint16_t _height) {
                 }
             }
             //Walkable neighbour to the left.
-            else if(!flagTop && !flagRight && !flagDown && flagLeft) {
+            else if(!flagTop && !flagRight && !flagDown && flagLeft && !_tileMap->map[x][y]->walkable) {
                 uint32_t random = randomBetween(0, 100);
                 if (random < 33){
                     _tileMap->map[x][y]->sprite.clip_x = 1;
@@ -326,7 +326,7 @@ void refineMap(TileMap* _tileMap, uint16_t _width, uint16_t _height) {
                 }
             }
             //Walkable neighbour down.
-            else if(!flagTop && !flagRight && flagDown && !flagLeft) {
+            else if(!flagTop && !flagRight && flagDown && !flagLeft && !_tileMap->map[x][y]->walkable) {
                 uint32_t random = randomBetween(0, 100);
                 if (random < 33){
                     _tileMap->map[x][y]->sprite.clip_x = 2 + (1 * TILE_WIDTH);
@@ -342,7 +342,7 @@ void refineMap(TileMap* _tileMap, uint16_t _width, uint16_t _height) {
                 }
             }
             //Walkable neighbour to the top.
-            else if(flagTop && !flagRight && !flagDown && !flagLeft) {
+            else if(flagTop && !flagRight && !flagDown && !flagLeft && !_tileMap->map[x][y]->walkable) {
                 uint32_t random = randomBetween(0, 100);
                 if (random < 33){
                     _tileMap->map[x][y]->sprite.clip_x = 2 + (1 * TILE_WIDTH);

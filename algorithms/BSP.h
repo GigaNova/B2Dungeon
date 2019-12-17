@@ -10,6 +10,9 @@
 #define MAX_MAP_SIZE 512
 #define SCALE 40
 
+#define MIN_ROCKS 1
+#define MAX_ROCKS 5
+
 #define WIDTH_RATIO 0.45
 #define HEIGHT_RATIO 0.45
 
