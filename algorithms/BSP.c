@@ -6,6 +6,7 @@ Map* generateDungeon(SDL_Renderer* _renderer, uint16_t _width, uint16_t _height)
     IntRectangle mainContainer = {0, 0, _width, _height};
     Tree* root = splitTree(0, mainContainer);
     generateRoom(root);
+    generateCorridors(root);
 
     return convertToMap(_renderer, root, _width, _height);
 }
@@ -55,6 +56,25 @@ void linkNodes(TileMap* _tileMap, uint16_t _width, uint16_t _height) {
 
 void convertNode(SDL_Renderer* _renderer, Tree* _node, TileMap* _tileMap) {
     if(!isLeaf(_node)){
+        if(_node->corridor.dir == HORIZONTAL){
+            const uint16_t y = _node->corridor.start.y / SCALE;
+            for(uint16_t x = _node->corridor.start.x / SCALE; x < _node->corridor.end.x / SCALE; ++x){
+                if(x < 2 || y < 2) continue;
+                Tile* newTile = createTile(_renderer, x, y, 10, 1);
+                newTile->walkable = true;
+                _tileMap->map[x][y] = newTile;
+            }
+        }
+        else{
+            const uint16_t x = _node->corridor.start.x / SCALE;
+            for(uint16_t y = _node->corridor.start.y / SCALE; y < _node->corridor.end.y / SCALE; ++y){
+                if(x < 2 || y < 2) continue;
+                Tile* newTile = createTile(_renderer, x, y, 10, 1);
+                newTile->walkable = true;
+                _tileMap->map[x][y] = newTile;
+            }
+        }
+
         if(_node->rightChild){
             convertNode(_renderer, _node->rightChild, _tileMap);
         }
@@ -66,7 +86,7 @@ void convertNode(SDL_Renderer* _renderer, Tree* _node, TileMap* _tileMap) {
     else{
         for(uint16_t x = _node->room.x / SCALE; x < (uint16_t)(_node->room.x / SCALE) + (uint16_t)(_node->room.w / SCALE); ++x){
             for(uint16_t y = _node->room.y / SCALE; y < (uint16_t)(_node->room.y / SCALE) + (uint16_t)(_node->room.h / SCALE); ++y){
-                if(x == 0 || y == 0) continue;
+                if(x < 2 || y < 2) continue;
                 Tile* newTile = createTile(_renderer, x, y, 10, 1);
                 newTile->walkable = true;
                 _tileMap->map[x][y] = newTile;
@@ -220,17 +240,17 @@ Point getCenter(IntRectangle* _rect) {
 }
 
 void refineMap(TileMap* _tileMap, uint16_t _width, uint16_t _height) {
-    bool flagTop = false;
-    bool flagRight = false;
-    bool flagDown = false;
-    bool flagLeft = false;
-    bool flagTopLeft = false;
-    bool flagTopRight = false;
-    bool flagDownRight = false;
-    bool flagDownLeft = false;
-
     for(uint16_t x = 0; x < _width; ++x) {
         for(uint16_t y = 0; y < _height; ++y) {
+            bool flagTop = false;
+            bool flagRight = false;
+            bool flagDown = false;
+            bool flagLeft = false;
+            bool flagTopLeft = false;
+            bool flagTopRight = false;
+            bool flagDownRight = false;
+            bool flagDownLeft = false;
+
             if(x - 1 > 0){
                 flagLeft = _tileMap->map[x - 1][y]->walkable;
             }
@@ -256,7 +276,25 @@ void refineMap(TileMap* _tileMap, uint16_t _width, uint16_t _height) {
                 flagTopLeft = _tileMap->map[x - 1][y - 1]->walkable;
             }
 
-            if(!flagTop && flagRight && !flagDown && !flagLeft) {
+            //Solid Wall, no walkable neighbours in any direction.
+            if(!flagTop && !flagRight && !flagDown && !flagLeft &&
+                !flagTopLeft && !flagTopRight && !flagDownRight && !flagDownLeft) {
+                uint32_t random = randomBetween(0, 100);
+                if (random < 66){
+                    _tileMap->map[x][y]->sprite.clip_x = 2 + (1 * TILE_WIDTH);
+                    _tileMap->map[x][y]->sprite.clip_y = 2 + (1 * TILE_HEIGHT);
+                }
+                else if (random < 86){
+                    _tileMap->map[x][y]->sprite.clip_x = 5 + (4 * TILE_WIDTH);
+                    _tileMap->map[x][y]->sprite.clip_y = 2 + (1 * TILE_HEIGHT);
+                }
+                else{
+                    _tileMap->map[x][y]->sprite.clip_x = 8 + (7 * TILE_WIDTH);
+                    _tileMap->map[x][y]->sprite.clip_y = 2 + (1 * TILE_HEIGHT);
+                }
+            }
+            //Walkable neighbour to the right.
+            else if(!flagTop && flagRight && !flagDown && !flagLeft) {
                 uint32_t random = randomBetween(0, 100);
                 if (random < 33){
                     _tileMap->map[x][y]->sprite.clip_x = 3 + (2 * TILE_WIDTH);
@@ -271,6 +309,7 @@ void refineMap(TileMap* _tileMap, uint16_t _width, uint16_t _height) {
                     _tileMap->map[x][y]->sprite.clip_y = 2 + (1 * TILE_HEIGHT);
                 }
             }
+            //Walkable neighbour to the left.
             else if(!flagTop && !flagRight && !flagDown && flagLeft) {
                 uint32_t random = randomBetween(0, 100);
                 if (random < 33){
@@ -286,6 +325,7 @@ void refineMap(TileMap* _tileMap, uint16_t _width, uint16_t _height) {
                     _tileMap->map[x][y]->sprite.clip_y = 2 + (1 * TILE_HEIGHT);
                 }
             }
+            //Walkable neighbour down.
             else if(!flagTop && !flagRight && flagDown && !flagLeft) {
                 uint32_t random = randomBetween(0, 100);
                 if (random < 33){
@@ -301,6 +341,7 @@ void refineMap(TileMap* _tileMap, uint16_t _width, uint16_t _height) {
                     _tileMap->map[x][y]->sprite.clip_y = 3 + (2 * TILE_HEIGHT);
                 }
             }
+            //Walkable neighbour to the top.
             else if(flagTop && !flagRight && !flagDown && !flagLeft) {
                 uint32_t random = randomBetween(0, 100);
                 if (random < 33){
@@ -316,22 +357,115 @@ void refineMap(TileMap* _tileMap, uint16_t _width, uint16_t _height) {
                     _tileMap->map[x][y]->sprite.clip_y = 1;
                 }
             }
-            else if(!flagTop && !flagRight && !flagDown && !flagLeft && flagDownRight) {
+            //Corner left-down
+            else if(!flagTop && !flagRight && flagLeft && flagDown && flagDownLeft && !_tileMap->map[x][y]->walkable){
+                _tileMap->map[x][y]->sprite.clip_x = 1;
+                _tileMap->map[x][y]->sprite.clip_y = 3 + (2 * TILE_HEIGHT);
+            }
+            //Corner right-down
+            else if(!flagTop && !flagLeft && flagRight && flagDown && flagDownRight && !_tileMap->map[x][y]->walkable){
+                _tileMap->map[x][y]->sprite.clip_x = 3 + (2 * TILE_WIDTH);
+                _tileMap->map[x][y]->sprite.clip_y = 3 + (2 * TILE_HEIGHT);
+            }
+            //Corner left-up
+            else if(!flagDown && !flagRight && flagLeft && flagTop && flagTopLeft && !_tileMap->map[x][y]->walkable){
+                _tileMap->map[x][y]->sprite.clip_x = 1;
+                _tileMap->map[x][y]->sprite.clip_y = 1;
+            }
+            //Corner right-up
+            else if(!flagDown && !flagLeft && flagRight && flagTop && flagTopRight && !_tileMap->map[x][y]->walkable){
+                _tileMap->map[x][y]->sprite.clip_x = 3 + (2 * TILE_WIDTH);
+                _tileMap->map[x][y]->sprite.clip_y = 1;
+            }
+            //Thin wall vertical
+            else if(!flagTop && flagRight && !flagDown && flagLeft && !_tileMap->map[x][y]->walkable) {
+                _tileMap->map[x][y]->sprite.clip_x = 1;
+                _tileMap->map[x][y]->sprite.clip_y = 5 + (4 * TILE_HEIGHT);
+            }
+            //Thin wall horizontal
+            else if(flagTop && !flagRight && flagDown && !flagLeft && !_tileMap->map[x][y]->walkable) {
+                _tileMap->map[x][y]->sprite.clip_x = 2 + (1 * TILE_WIDTH);
+                _tileMap->map[x][y]->sprite.clip_y = 4 + (3 * TILE_HEIGHT);
+            }
+            //Pointy thing right
+            else if(flagTop && flagRight && flagDown && !flagLeft && !_tileMap->map[x][y]->walkable) {
+                _tileMap->map[x][y]->sprite.clip_x = 3 + (2 * TILE_WIDTH);
+                _tileMap->map[x][y]->sprite.clip_y = 8 + (7 * TILE_HEIGHT);
+            }
+            //Pointy thing left
+            else if(flagTop && !flagRight && flagDown && flagLeft && !_tileMap->map[x][y]->walkable) {
+                _tileMap->map[x][y]->sprite.clip_x = 1;
+                _tileMap->map[x][y]->sprite.clip_y = 8 + (7 * TILE_HEIGHT);
+            }
+            //Pointy thing up
+            else if(flagTop && flagRight && !flagDown && flagLeft && !_tileMap->map[x][y]->walkable) {
+                _tileMap->map[x][y]->sprite.clip_x = 2 + (1 * TILE_WIDTH);
+                _tileMap->map[x][y]->sprite.clip_y = 7 + (6 * TILE_HEIGHT);
+            }
+            //Pointy thing down
+            else if(!flagTop && flagRight && flagDown && flagLeft && !_tileMap->map[x][y]->walkable) {
+                _tileMap->map[x][y]->sprite.clip_x = 2 + (1 * TILE_WIDTH);
+                _tileMap->map[x][y]->sprite.clip_y = 9 + (8 * TILE_HEIGHT);
+            }
+            //Rock
+            else if(flagTop && flagRight && flagDown && flagLeft && !_tileMap->map[x][y]->walkable) {
+                _tileMap->map[x][y]->sprite.clip_x = 2 + (1 * TILE_WIDTH);
+                _tileMap->map[x][y]->sprite.clip_y = 5 + (4 * TILE_HEIGHT);
+            }
+            //Walkable ground
+            else if(flagTop || flagRight || flagDown || flagLeft) {
+                uint32_t random = randomBetween(0, 100);
+                if (random < 80){
+                    _tileMap->map[x][y]->sprite.clip_x = 11 + (10 * TILE_WIDTH);
+                    _tileMap->map[x][y]->sprite.clip_y = 2 + (1 * TILE_HEIGHT);
+                }
+                else if (random < 90){
+                    _tileMap->map[x][y]->sprite.clip_x = 11 + (10 * TILE_WIDTH);
+                    _tileMap->map[x][y]->sprite.clip_y = 4 + (3 * TILE_HEIGHT);
+                }
+                else{
+                    _tileMap->map[x][y]->sprite.clip_x = 11 + (10 * TILE_WIDTH);
+                    _tileMap->map[x][y]->sprite.clip_y = 5 + (4 * TILE_HEIGHT);
+                }
+            }
+            else if(flagDownRight) {
                 _tileMap->map[x][y]->sprite.clip_x = 1;
                 _tileMap->map[x][y]->sprite.clip_y = 16 + (15 * TILE_HEIGHT);
             }
-            else if(!flagTop && !flagRight && !flagDown && !flagLeft && flagTopRight) {
+            else if(flagTopRight) {
                 _tileMap->map[x][y]->sprite.clip_x = 1;
                 _tileMap->map[x][y]->sprite.clip_y = 17 + (16 * TILE_HEIGHT);
             }
-            else if(!flagTop && !flagRight && !flagDown && !flagLeft && flagDownLeft) {
+            else if(flagDownLeft) {
                 _tileMap->map[x][y]->sprite.clip_x = 2 + (1 * TILE_WIDTH);
                 _tileMap->map[x][y]->sprite.clip_y = 16 + (15 * TILE_HEIGHT);
             }
-            else if(!flagTop && !flagRight && !flagDown && !flagLeft && flagTopLeft) {
+            else if(flagTopLeft) {
                 _tileMap->map[x][y]->sprite.clip_x = 2 + (1 * TILE_WIDTH);
                 _tileMap->map[x][y]->sprite.clip_y = 17 + (16 * TILE_HEIGHT);
             }
         }
     }
+}
+
+void generateCorridors(Tree* _node) {
+    if(!_node->rightChild || !_node->leftChild){
+        return;
+    }
+
+    Point centerA = getCenter(&_node->leftChild->container);
+    Point centerB = getCenter(&_node->rightChild->container);
+
+    if(centerA.y != centerB.y){
+        _node->corridor.dir = VERTICAL;
+        _node->corridor.start = centerA.y < centerB.y ? centerA : centerB;
+        _node->corridor.end = centerA.y < centerB.y ? centerB : centerA;
+    }else{
+        _node->corridor.dir = HORIZONTAL;
+        _node->corridor.start = centerA.x < centerB.x ? centerA : centerB;
+        _node->corridor.end = centerA.x < centerB.x ? centerB : centerA;
+    }
+
+    generateCorridors(_node->leftChild);
+    generateCorridors(_node->rightChild);
 }

@@ -5,13 +5,18 @@
 #include "../Math.h"
 #include "../Map.h"
 
-#define MIN_ROOM_DISTANCE 2
+#define MIN_ROOM_DISTANCE 4
 #define MAX_DEPTH 5
 #define MAX_MAP_SIZE 512
-#define SCALE 28
+#define SCALE 40
 
 #define WIDTH_RATIO 0.45
 #define HEIGHT_RATIO 0.45
+
+typedef enum{
+    HORIZONTAL,
+    VERTICAL
+} Direction;
 
 typedef struct{
     int16_t x;
@@ -30,11 +35,18 @@ typedef struct {
     IntRectangle right;
 } SplitRectangle;
 
+typedef struct {
+    Point start;
+    Point end;
+    Direction dir;
+} Corridor;
+
 struct Tree{
     IntRectangle container;
     IntRectangle room;
     struct Tree* leftChild;
     struct Tree* rightChild;
+    Corridor corridor;
 };
 typedef struct Tree Tree;
 
