@@ -3,10 +3,44 @@
 #include "Math.h"
 #include "Input.h"
 
-#define SCREEN_WIDTH 1024
-#define SCREEN_HEIGHT 768
+#define SCREEN_WIDTH 512
+#define SCREEN_HEIGHT 512
 
 #define PLAYER_SPEED 250.f
+
+void ViewportSystem(Viewport* _viewport, const Position* _followerPosition, uint16_t _maxWidth, uint16_t _maxHeight) {
+    const uint32_t halfX = 12;
+    const uint32_t halfY = 12;
+    const uint32_t entityX = _followerPosition->x;
+    const uint32_t entityY = _followerPosition->y;
+
+    const uint32_t middleX = entityX + halfX;
+    const uint32_t middleY = entityY + halfY;
+
+    _viewport->x = middleX - (SCREEN_WIDTH / 2);
+    _viewport->y = middleY - (SCREEN_HEIGHT / 2);
+
+
+    if(_viewport->x < 0)
+    {
+        _viewport->x = 0;
+    }
+
+    if (_viewport->y < 0)
+    {
+        _viewport->y = 0;
+    }
+
+    if(_viewport->x + SCREEN_WIDTH > _maxWidth)
+    {
+        _viewport->x = _maxWidth - SCREEN_WIDTH;
+    }
+
+    if (_viewport->y + SCREEN_HEIGHT > _maxHeight)
+    {
+        _viewport->y = _maxHeight - SCREEN_HEIGHT;
+    }
+}
 
 void velocitySystem(Position *_position, const Velocity *_velocity) {
     if(_velocity == NULL) return;
@@ -15,12 +49,12 @@ void velocitySystem(Position *_position, const Velocity *_velocity) {
     _position->y += _velocity->vy * timer->deltaTime;
 }
 
-void drawSystem(SDL_Renderer* _renderer, const Position* _position, const Rotation* _rotation, const Sprite* _sprite, bool _debuggable) {
+void drawSystem(SDL_Renderer* _renderer, const Viewport* _viewport, const Position* _position, const Rotation* _rotation, const Sprite* _sprite, bool _debuggable) {
     if(_sprite == NULL) return;
 
     SDL_Rect dstRect;
-    dstRect.x = (int)_position->x;
-    dstRect.y = (int)_position->y;
+    dstRect.x = (int)(_position->x - _viewport->x);
+    dstRect.y = (int)(_position->y - _viewport->y);
     dstRect.w = _sprite->width;
     dstRect.h = _sprite->height;
 

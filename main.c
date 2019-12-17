@@ -14,8 +14,8 @@
 #include <SDL_image.h>
 #include <time.h>
 
-#define SCREEN_WIDTH 1008
-#define SCREEN_HEIGHT 768
+#define SCREEN_WIDTH 512
+#define SCREEN_HEIGHT 512
 
 int main( int argc, char* args[] ) {
     srand(time(NULL));

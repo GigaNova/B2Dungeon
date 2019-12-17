@@ -9,6 +9,9 @@ void initContext(Context *_data) {
     for(uint32_t i = 0; i < MAX_ENTITIES; ++i){
         data->id[i] = FREE_ID;
     }
+
+    _data->viewport.y = 0;
+    _data->viewport.x = 0;
 }
 
 EntityID cloneEntity(Context* _data, EntityID _entityId){

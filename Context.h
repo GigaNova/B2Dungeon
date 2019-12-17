@@ -7,9 +7,11 @@
 
 #include "Entity.h"
 #include "Map.h"
+#include "Screen.h"
 
 typedef struct{
     EntityData entityData;
+    Viewport viewport;
     Map* map;
 } Context;
 
